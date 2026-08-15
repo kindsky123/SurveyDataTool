@@ -30,5 +30,13 @@ def coordinate_forward(x,y,distance,angle):
     dy=distance*math.sin(ang_rad)
     x_end=x+dx
     y_end=y+dy
-
+    
     return x_end,y_end
+
+def coordinate_inverse(x1,y1,x2,y2):
+    #坐标反算
+    dis=distance(x1,y1,x2,y2)
+    angle=azimuth(x1,y1,x2,y2)
+
+    return dis,angle
+
