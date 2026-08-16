@@ -1,4 +1,5 @@
 from surveying import distance,azimuth,coordinate_forward,coordinate_inverse
+from data_process import read_points,find_point,save_results
 
 
 while True:
@@ -10,6 +11,9 @@ while True:
     print("2. 方位角")
     print("3. 坐标正算")
     print("4. 坐标反算")
+    print("5. 读取测量点数据")
+    print("6. 测量点距离及方位角")
+    print("7. 批量计算测量点数据")
     print("0. 退出")
 
     choice = input("请选择功能：")
@@ -68,5 +72,99 @@ while True:
         print(f"A-B距离：{dis:.3f} m")
         print(f"A-B方位角：{angle:.3f}°")
 
-    if choice not in ["0", "1", "2", "3", "4"]:
+    if choice == "5":
+        print("你选择了：读取测量点数据")
+
+        filename = input("请输入CSV文件名：")
+
+        points = read_points(filename)
+
+        print(f"读取成功！共读取 {len(points)} 个测量点：")
+
+        for point in points:
+          print(
+               f"{point['id']}: "
+              f"X={point['x']:.3f}, "
+             f"Y={point['y']:.3f}"
+             )
+
+    if choice == "6":
+        print("你选择了：测量点距离与方位角")
+
+        filename = input("请输入CSV文件名：")
+
+        points = read_points(filename)
+
+        print(f"已读取 {len(points)} 个测量点")
+
+        point1_id = input("请输入起点点号：")
+        point2_id = input("请输入终点点号：")
+
+        point1 = find_point(points, point1_id)
+        point2 = find_point(points, point2_id)
+
+        if point1 is None or point2 is None:
+            print("点号不存在！")
+        else:
+            dis = distance(
+                point1["x"],
+                point1["y"],
+                point2["x"],
+                point2["y"]
+            )
+
+            angle = azimuth(
+                point1["x"],
+                point1["y"],
+                point2["x"],
+                point2["y"]
+            )
+
+            print(f"{point1_id}-{point2_id}距离：{dis:.3f} m")
+            print(f"{point1_id}-{point2_id}方位角：{angle:.3f}°")      
+
+    if choice == "7":
+
+        filename = input("请输入CSV文件名：")
+
+        points = read_points(filename)
+
+        results = []
+
+        for i in range(len(points)-1):
+
+            p1 = points[i]
+            p2 = points[i+1]
+
+            dis = distance(
+                p1["x"],
+                p1["y"],
+                p2["x"],
+                p2["y"]
+            )
+
+            angle = azimuth(
+                p1["x"],
+                p1["y"],
+                p2["x"],
+                p2["y"]
+            )
+
+            result = {
+                "起点": p1["id"],
+                "终点": p2["id"],
+                "距离": round(dis,3),
+                "方位角": round(angle,3)
+            }
+
+            results.append(result)
+
+
+        save_results("result.csv", results)
+        print("计算完成，结果已保存 result.csv")
+
+    if choice not in ["0", "1", "2", "3", "4","5","6","7"]:
         print("请输入正确的功能编号！")
+
+
+   
