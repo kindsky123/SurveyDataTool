@@ -1,5 +1,6 @@
 from surveying import distance,azimuth,coordinate_forward,coordinate_inverse
 from data_process import read_points,find_point,save_results
+from visualization import plot_points 
 
 
 while True:
