@@ -24,9 +24,13 @@ def plot_points(points):
 # 显示网格
 
 # 保存图片
-    plt.savefig("survey_points.png", dpi=150, bbox_inches="tight")
+    plt.savefig(
+    "output/survey_points.png",
+    dpi=150,
+    bbox_inches="tight")
 
-    print("测量点图已保存：survey_points.png")
+
+    print("测量点图已保存：output/survey_points.png")
 
     plt.close()
 # 关闭画布
