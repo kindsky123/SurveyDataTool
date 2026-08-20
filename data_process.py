@@ -56,6 +56,11 @@ def find_point(points, point_id):
 
 def validate_points(points):
 
+    # 检查是否没有数据
+    if not points:
+        return False, "文件中没有测量点数据！"
+
+
     # 用来保存已经出现过的点号
     valid_points = []
     point_ids = set()

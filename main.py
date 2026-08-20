@@ -188,6 +188,11 @@ def main():
                 print("文件不存在！请检查文件名。")
                 continue
 
+            except ValueError as error:
+
+                print(f"数据格式错误：{error}")
+                continue
+
             # --检查测量点数据
             valid, message = validate_points(points)
 
@@ -230,6 +235,11 @@ def main():
             except FileNotFoundError:
 
                 print("文件不存在！请检查文件名。")
+                continue
+
+            except ValueError as error:
+
+                print(f"数据格式错误：{error}")
                 continue
 
             valid, message = validate_points(points)
@@ -311,6 +321,11 @@ def main():
                 print("文件不存在！请检查文件名。")
                 continue
 
+            except ValueError as error:
+
+                print(f"数据格式错误：{error}")
+                continue
+
             valid, message = validate_points(points)
 
             if not valid:
@@ -385,6 +400,11 @@ def main():
             except FileNotFoundError:
 
                 print("文件不存在！请检查文件名。")
+                continue
+
+            except ValueError as error:
+
+                print(f"数据格式错误：{error}")
                 continue
 
             valid, message = validate_points(points)
