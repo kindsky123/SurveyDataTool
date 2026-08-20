@@ -181,31 +181,31 @@ def main():
                 filename
             )
 
-        try:
-            points = read_points(filepath)
+            try:
+                points = read_points(filepath)
 
-        except FileNotFoundError:
-            print("文件不存在！请检查文件名。")
-            continue
+            except FileNotFoundError:
+                print("文件不存在！请检查文件名。")
+                continue
 
-        # --检查测量点数据
-        valid, message = validate_points(points)
+            # --检查测量点数据
+            valid, message = validate_points(points)
 
-        if not valid:
-            print(f"数据检查失败：{message}")
-            continue
+            if not valid:
+                print(f"数据检查失败：{message}")
+                continue
 
-        print(
-            f"读取成功！共读取 "
-            f"{len(points)} 个有效测量点："
-        )
-
-        for point in points:
             print(
-                f"{point['id']}: "
-                f"X={point['x']:.3f}, "
-                f"Y={point['y']:.3f}"
+                f"读取成功！共读取 "
+                f"{len(points)} 个有效测量点："
             )
+
+            for point in points:
+                print(
+                    f"{point['id']}: "
+                    f"X={point['x']:.3f}, "
+                    f"Y={point['y']:.3f}"
+                )
 
 
         # ==============================
