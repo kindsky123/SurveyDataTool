@@ -9,15 +9,36 @@ def read_points(filename):
     with open(filename, "r", encoding="utf-8") as file:
         reader = csv.DictReader(file)
 
-        # 核心代码：读取csv文件并转化成字典格式
-        for row in reader:
-            point = {
-                "id": row["点号"],
-                "x": float(row["X"]),
-                "y": float(row["Y"])
-            }
+        # 检查表头是否包含必需的列
+        required = ["点号", "X", "Y"]
 
-            points.append(point)
+        if not reader.fieldnames:
+            raise ValueError("CSV文件为空或没有表头！")
+
+        missing = [col for col in required if col not in reader.fieldnames]
+        if missing:
+            raise ValueError(f"CSV缺少必需列：{missing}")
+
+        for row in reader:
+            # 点号原样保存
+            point_id = row["点号"]
+
+            # 尝试转成数字，转不了就保留原文，交给 validate_points 检查
+            try:
+                x = float(row["X"])
+            except ValueError:
+                x = row["X"]
+
+            try:
+                y = float(row["Y"])
+            except ValueError:
+                y = row["Y"]
+
+            points.append({
+                "id": point_id,
+                "x": x,
+                "y": y
+            })
 
     return points
 
