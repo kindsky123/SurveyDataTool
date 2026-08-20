@@ -6,7 +6,7 @@ SurveyDataTool 是一个基于 Python 开发的小型测绘数据处理工具。
 
 本项目结合测绘专业知识与 Python 编程，实现常用测量计算、测量点数据读取、批量计算、结果导出以及测量点可视化等功能。
 
-项目主要用于学习 Python 在测绘数据自动化处理中的应用，并逐步完善数据处理、可视化和异常处理等功能。
+项目主要用于学习 Python 在测绘数据自动化处理中的应用，并逐步完善数据处理、可视化、项目结构和代码组织。
 
 ---
 
@@ -107,10 +107,10 @@ P004-P005
 - 两点距离
 - 两点方位角
 
-计算结果自动保存为：
+计算结果自动保存到：
 
 ```text
-result.csv
+output/result.csv
 ```
 
 ---
@@ -131,13 +131,13 @@ result.csv
 生成的图片：
 
 ```text
-survey_points.png
+output/survey_points.png
 ```
 
 示例流程：
 
 ```text
-points.csv
+data/points.csv
     ↓
 读取测量点
     ↓
@@ -203,6 +203,13 @@ points.csv
 ```text
 SurveyDataTool
 │
+├── data/
+│   └── points.csv
+│
+├── output/
+│   ├── result.csv
+│   └── survey_points.png
+│
 ├── main.py
 │   └── 程序入口、菜单交互和异常处理
 │
@@ -215,15 +222,37 @@ SurveyDataTool
 ├── visualization.py
 │   └── 测量点数据可视化
 │
-├── points.csv
-│   └── 示例测量点数据
-│
-├── result.csv
-│   └── 批量计算结果
-│
-└── survey_points.png
-    └── 测量点可视化结果
+└── README.md
 ```
+
+---
+
+# 数据目录
+
+项目对输入数据和输出结果进行了分类管理。
+
+## data
+
+用于存放程序输入数据。
+
+例如：
+
+```text
+data/points.csv
+```
+
+## output
+
+用于存放程序运行产生的结果。
+
+例如：
+
+```text
+output/result.csv
+output/survey_points.png
+```
+
+通过将输入数据和输出结果分开管理，使项目目录更加清晰，也便于后续扩展和维护。
 
 ---
 
@@ -241,7 +270,25 @@ pip install matplotlib
 
 ---
 
-## 2. 运行程序
+## 2. 准备数据
+
+将测量点 CSV 文件放入：
+
+```text
+data/
+```
+
+例如：
+
+```text
+data/points.csv
+```
+
+---
+
+## 3. 运行程序
+
+在项目根目录运行：
 
 ```bash
 python main.py
@@ -249,7 +296,7 @@ python main.py
 
 ---
 
-## 3. 功能菜单
+## 4. 功能菜单
 
 ```text
 ================================
@@ -267,6 +314,22 @@ python main.py
 8. 测量点可视化
 0. 退出
 ```
+
+输入对应数字即可选择功能。
+
+当需要读取 CSV 文件时，只需要输入文件名，例如：
+
+```text
+points.csv
+```
+
+程序会自动从：
+
+```text
+data/points.csv
+```
+
+读取数据。
 
 ---
 
@@ -334,6 +397,23 @@ python main.py
 
 ---
 
+## Day 5
+
+对项目的文件组织和路径管理进行整理：
+
+- 新建 `data/` 数据目录
+- 新建 `output/` 输出目录
+- 将 `points.csv` 移动到 `data/`
+- 将程序生成的结果统一保存到 `output/`
+- 增加 `DATA_DIR` 和 `OUTPUT_DIR` 路径配置
+- 使用 `os.path.join()` 管理文件路径
+- 修改 CSV 数据读取路径
+- 修改批量计算结果输出路径
+- 整理主程序代码结构
+- 修复文件路径调整过程中出现的主菜单执行问题
+
+---
+
 # 当前功能
 
 目前项目已经实现：
@@ -352,6 +432,8 @@ python main.py
 - [x] 测量点顺序连接
 - [x] 基础数字输入异常处理
 - [x] CSV 文件异常处理
+- [x] 输入数据与输出结果分类管理
+- [x] 项目文件路径统一管理
 
 ---
 
@@ -379,4 +461,4 @@ kindsky123
 
 本项目为个人学习实践项目，用于探索 Python 在测绘数据自动化处理中的应用。
 
-项目开发过程中结合测绘专业知识与 Python 编程，通过模块化设计、数据处理、可视化和异常处理等方式逐步完善项目功能。
+项目开发过程中结合测绘专业知识与 Python 编程，通过模块化设计、数据处理、可视化、异常处理和项目结构整理等方式逐步完善项目功能。
