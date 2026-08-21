@@ -14,6 +14,11 @@ from data_process import (
 
 from visualization import plot_points
 
+from error_handler import (
+    input_float,
+    load_points_from_file
+)
+
 import os
 
 
@@ -25,16 +30,7 @@ DATA_DIR = "data"
 OUTPUT_DIR = "output"
 
 
-# ==============================
-# 数字输入异常处理
-# ==============================
 
-def input_float(message):
-    while True:
-        try:
-            return float(input(message))
-        except ValueError:
-            print("输入错误！请输入数字。")
 
 
 # ==============================
@@ -64,13 +60,17 @@ def main():
             # ==============================
             # 0. 退出
             # ==============================
+
             if choice == "0":
                 print("程序结束")
                 break
 
+
+
             # ==============================
             # 1. 两点距离
             # ==============================
+
             elif choice == "1":
                 print("你选择了：两点距离")
                 x1 = input_float("请输入A点X坐标：")
@@ -80,9 +80,12 @@ def main():
                 result = distance(x1, y1, x2, y2)
                 print(f"A-B距离：{result:.3f} m")
 
+
+
             # ==============================
             # 2. 方位角
             # ==============================
+
             elif choice == "2":
                 print("你选择了：方位角")
                 x1 = input_float("请输入A点X坐标：")
@@ -92,9 +95,12 @@ def main():
                 angle = azimuth(x1, y1, x2, y2)
                 print(f"A-B方位角：{angle:.3f}°")
 
+
+
             # ==============================
             # 3. 坐标正算
             # ==============================
+
             elif choice == "3":
                 print("你选择了：坐标正算")
                 x = input_float("请输入起点X坐标：")
@@ -105,9 +111,12 @@ def main():
                 print(f"终点X坐标：{x_end:.3f}")
                 print(f"终点Y坐标：{y_end:.3f}")
 
+
+
             # ==============================
             # 4. 坐标反算
             # ==============================
+
             elif choice == "4":
                 print("你选择了：坐标反算")
                 x1 = input_float("请输入A点X坐标：")
@@ -118,55 +127,32 @@ def main():
                 print(f"A-B距离：{dis:.3f} m")
                 print(f"A-B方位角：{angle:.3f}°")
 
+
+
             # ==============================
             # 5. 读取测量点数据
             # ==============================
+
             elif choice == "5":
                 print("你选择了：读取测量点数据")
-                filename = input("请输入CSV文件名：")
-                filepath = os.path.join(DATA_DIR, filename)
-
-                try:
-                    points = read_points(filepath)
-                except FileNotFoundError:
-                    print("文件不存在！请检查文件名。")
+                points = load_points_from_file()
+                if points is None:
                     continue
-                except ValueError as error:
-                    print(f"数据格式错误：{error}")
-                    continue
-
-                valid, message = validate_points(points)
-                if not valid:
-                    print(f"数据检查失败：{message}")
-                    continue
-
                 print(f"读取成功！共读取 {len(points)} 个有效测量点：")
                 for point in points:
                     print(f"{point['id']}: X={point['x']:.3f}, Y={point['y']:.3f}")
 
+
+
             # ==============================
             # 6. 测量点距离及方位角
             # ==============================
+
             elif choice == "6":
                 print("你选择了：测量点距离与方位角")
-                filename = input("请输入CSV文件名：")
-                filepath = os.path.join(DATA_DIR, filename)
-
-                try:
-                    points = read_points(filepath)
-                except FileNotFoundError:
-                    print("文件不存在！请检查文件名。")
+                points = load_points_from_file()
+                if points is None:
                     continue
-                except ValueError as error:
-                    print(f"数据格式错误：{error}")
-                    continue
-
-                valid, message = validate_points(points)
-                if not valid:
-                    print(f"数据检查失败：{message}")
-                    continue
-
-                print(f"已读取 {len(points)} 个测量点")
 
                 point1_id = input("请输入起点点号：")
                 point2_id = input("请输入终点点号：")
@@ -181,26 +167,16 @@ def main():
                     print(f"{point1_id}-{point2_id}距离：{dis:.3f} m")
                     print(f"{point1_id}-{point2_id}方位角：{angle:.3f}°")
 
+
+
             # ==============================
             # 7. 批量计算测量点数据
             # ==============================
+
             elif choice == "7":
                 print("你选择了：批量计算测量点数据")
-                filename = input("请输入CSV文件名：")
-                filepath = os.path.join(DATA_DIR, filename)
-
-                try:
-                    points = read_points(filepath)
-                except FileNotFoundError:
-                    print("文件不存在！请检查文件名。")
-                    continue
-                except ValueError as error:
-                    print(f"数据格式错误：{error}")
-                    continue
-
-                valid, message = validate_points(points)
-                if not valid:
-                    print(f"数据检查失败：{message}")
+                points = load_points_from_file()
+                if points is None:
                     continue
 
                 results = []
@@ -220,35 +196,27 @@ def main():
                 save_results(output_file, results)
                 print(f"计算完成，结果已保存：{output_file}")
 
+
+
             # ==============================
             # 8. 测量点可视化
             # ==============================
+
             elif choice == "8":
                 print("你选择了：测量点可视化")
-                filename = input("请输入CSV文件名：")
-                filepath = os.path.join(DATA_DIR, filename)
-
-                try:
-                    points = read_points(filepath)
-                except FileNotFoundError:
-                    print("文件不存在！请检查文件名。")
-                    continue
-                except ValueError as error:
-                    print(f"数据格式错误：{error}")
+                points = load_points_from_file()
+                if points is None:
                     continue
 
-                valid, message = validate_points(points)
-                if not valid:
-                    print(f"数据检查失败：{message}")
-                    continue
-
-                print(f"已读取 {len(points)} 个测量点")
                 plot_points(points)
                 print("测量点图已保存：survey_points.png")
+
+
 
             # ==============================
             # 无效输入
             # ==============================
+
             else:
                 print("请输入正确的功能编号！")
 
