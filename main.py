@@ -9,7 +9,7 @@ from data_process import (
     read_points,
     find_point,
     save_results,
-    validate_points
+    validate_points,
     get_points_stats
 )
 
@@ -54,6 +54,7 @@ def main():
             print("6. 测量点距离及方位角")
             print("7. 批量计算测量点数据")
             print("8. 测量点可视化")
+            print("9. 测量点统计") 
             print("0. 退出")
 
             choice = input("请选择功能：")
@@ -211,6 +212,29 @@ def main():
 
                 plot_points(points)
                 print("测量点图已保存：survey_points.png")
+
+
+
+            # ==============================
+            # 9. 测量点统计
+            # ==============================
+            
+            elif choice == "9":
+                print("你选择了：测量点统计")
+                points = load_points_from_file()
+                if points is None:
+                    continue
+
+                stats = get_points_stats(points)
+                print("=" * 40)
+                print("          测量点统计结果")
+                print("=" * 40)
+                print(f"点数量：{stats['count']}")
+                print(f"X坐标范围：{stats['x_min']:.3f}  ~  {stats['x_max']:.3f}")
+                print(f"Y坐标范围：{stats['y_min']:.3f}  ~  {stats['y_max']:.3f}")
+                print(f"X坐标平均值：{stats['x_avg']:.3f}")
+                print(f"Y坐标平均值：{stats['y_avg']:.3f}")
+                print("=" * 40)
 
 
 
