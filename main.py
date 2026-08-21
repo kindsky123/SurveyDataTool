@@ -10,6 +10,7 @@ from data_process import (
     find_point,
     save_results,
     validate_points
+    get_points_stats
 )
 
 from visualization import plot_points

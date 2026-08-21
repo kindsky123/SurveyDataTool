@@ -121,3 +121,27 @@ def save_results(filename, results):
 
         for result in results:
             writer.writerow(result)
+
+
+def get_points_stats(points):
+    """
+    DAY8 统计测量点数据
+    返回：点数量、X范围、Y范围、X平均值、Y平均值
+    """
+    if not points:
+        return None
+
+    n = len(points)
+    xs = [p["x"] for p in points]
+    ys = [p["y"] for p in points]
+
+    stats = {
+        "count": n,
+        "x_min": min(xs),
+        "x_max": max(xs),
+        "y_min": min(ys),
+        "y_max": max(ys),
+        "x_avg": sum(xs) / n,
+        "y_avg": sum(ys) / n,
+    }
+    return stats
