@@ -20,6 +20,12 @@ from error_handler import (
     load_points_from_file
 )
 
+from traverse import (
+    read_traverse_data, 
+    traverse_calculation, 
+    format_traverse_report
+)
+
 import os
 
 
@@ -55,6 +61,7 @@ def main():
             print("7. 批量计算测量点数据")
             print("8. 测量点可视化")
             print("9. 测量点统计") 
+            print("10. 导线计算")
             print("0. 退出")
 
             choice = input("请选择功能：")
@@ -237,6 +244,49 @@ def main():
                 print("=" * 40)
 
 
+
+            # ==============================
+            # 10. 导线计算
+            # ==============================
+            elif choice == "10":
+                print("你选择了：导线计算")
+                print("\n请输入导线观测数据文件（CSV格式）")
+                print("文件格式：点号, 角(度), 边长(米), 备注")
+                print("备注列填写'已知'表示该点为已知点（不参与计算）")
+                print()
+                
+                filename = input("请输入CSV文件名：")
+                filepath = os.path.join(DATA_DIR, filename)
+                
+                try:
+                    observed_data = read_traverse_data(filepath)
+                except FileNotFoundError:
+                    print("文件不存在！请检查文件名。")
+                    continue
+                except ValueError as error:
+                    print(f"数据格式错误：{error}")
+                    continue
+                except KeyError as error:
+                    print(f"CSV缺少必需列：{error}")
+                    continue
+                
+                if not observed_data:
+                    print("文件中没有数据！")
+                    continue
+                
+                print(f"已读取 {len(observed_data)} 条观测数据")
+                
+                # 输入起点坐标和起始方位角
+                print("\n请输入导线起点信息：")
+                start_x = input_float("起点X坐标：")
+                start_y = input_float("起点Y坐标：")
+                start_azimuth = input_float("起始方位角（度）：")
+                
+                # 执行导线计算
+                results, closure = traverse_calculation(start_x, start_y, start_azimuth, observed_data)
+                
+                # 输出结果
+                format_traverse_report(results, closure)
 
             # ==============================
             # 无效输入
