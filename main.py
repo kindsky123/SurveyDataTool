@@ -184,6 +184,7 @@ def main():
             # ==============================
             # 7. 批量计算测量点数据
             # ==============================
+
             elif choice == "7":
                 print("你选择了：批量计算测量点数据")
                 points = load_points_from_file()
@@ -225,6 +226,8 @@ def main():
                 output_file = os.path.join(OUTPUT_DIR, "result.csv")
                 save_results(output_file, results, include_cumulative=True)
                 print(f"结果已保存：{output_file}")
+
+
 
             # ==============================
             # 8. 测量点可视化
