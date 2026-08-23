@@ -225,3 +225,98 @@ def format_adjusted_report(adjusted_results, closure):
     else:
         print("✅ 精度评定：完美闭合")
     print("=" * 70)
+
+
+def save_traverse_report(results, closure, adjusted_results, start_x, start_y, start_azimuth, filename=None):
+    """
+    导出导线计算报告到 .txt 文件
+    
+    参数：
+        results: 原始计算结果列表
+        closure: 闭合差字典
+        adjusted_results: 平差后结果列表（如果进行了平差）
+        start_x, start_y: 起点坐标
+        start_azimuth: 起始方位角
+        filename: 指定文件名，如果为 None 则自动生成
+    """
+    import os
+    from datetime import datetime
+    
+    # 自动生成文件名
+    if filename is None:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"traverse_report_{timestamp}.txt"
+    
+    # 确保 output 目录存在
+    os.makedirs("output", exist_ok=True)
+    filepath = os.path.join("output", filename)
+    
+    with open(filepath, "w", encoding="utf-8") as f:
+        # 标题
+        f.write("=" * 60 + "\n")
+        f.write("                    导线测量计算报告\n")
+        f.write("=" * 60 + "\n")
+        f.write(f"生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+        
+        # 输入数据
+        f.write("【输入数据】\n")
+        f.write(f"起点坐标: X={start_x:.3f}, Y={start_y:.3f}\n")
+        f.write(f"起始方位角: {start_azimuth:.3f}°\n")
+        f.write(f"观测点数: {len(results)}\n\n")
+        
+        # 原始计算结果
+        f.write("【原始计算结果】\n")
+        f.write("=" * 60 + "\n")
+        f.write(f"{'点号':<8} {'X坐标':<12} {'Y坐标':<12} {'ΔX':<12} {'ΔY':<12} {'边长':<10}\n")
+        f.write("-" * 60 + "\n")
+        
+        for r in results:
+            if r["dx"] is None:
+                f.write(f"{r['name']:<8} {r['x']:<12.3f} {r['y']:<12.3f} {'(已知)':<12} {'(已知)':<12} {'-':<10}\n")
+            else:
+                f.write(f"{r['name']:<8} {r['x']:<12.3f} {r['y']:<12.3f} {r['dx']:<12.3f} {r['dy']:<12.3f} {r['distance']:<10.3f}\n")
+        
+        f.write("\n")
+        
+        # 闭合差
+        f.write("【闭合差】\n")
+        f.write(f"fx = {closure['fx']:.6f} m\n")
+        f.write(f"fy = {closure['fy']:.6f} m\n")
+        f.write(f"全长闭合差 f = {closure['f']:.6f} m\n")
+        f.write(f"导线总长 = {closure['total_distance']:.3f} m\n")
+        k_str = f"1/{int(1/closure['k'])}" if closure['k'] > 0 else "∞"
+        f.write(f"相对闭合差 K = {k_str}\n\n")
+        
+        # 平差结果（如果有）
+        if adjusted_results:
+            f.write("【平差结果】\n")
+            f.write("-" * 70 + "\n")
+            f.write(f"{'点号':<8} {'原始X':<12} {'原始Y':<12} {'Vx':<12} {'Vy':<12} {'平差后X':<12} {'平差后Y':<12}\n")
+            f.write("-" * 70 + "\n")
+            
+            for r in adjusted_results:
+                if r['vx'] is None:
+                    f.write(f"{r['name']:<8} {r['x']:<12.3f} {r['y']:<12.3f} {'(已知)':<12} {'(已知)':<12} {r['x']:<12.3f} {r['y']:<12.3f}\n")
+                else:
+                    f.write(f"{r['name']:<8} {r['x']:<12.3f} {r['y']:<12.3f} {r['vx']:<12.3f} {r['vy']:<12.3f} {r['adj_x']:<12.3f} {r['adj_y']:<12.3f}\n")
+            
+            f.write("\n")
+        
+        # 精度评定
+        f.write("【精度评定】\n")
+        f.write(f"全长闭合差 f = {closure['f']:.6f} m\n")
+        f.write(f"导线总长 = {closure['total_distance']:.3f} m\n")
+        f.write(f"相对闭合差 K = {k_str}\n")
+        
+        if closure['k'] > 0:
+            if closure['k'] <= 1/2000:
+                f.write("✅ 精度评定：合格（K ≤ 1/2000）\n")
+            else:
+                f.write("❌ 精度评定：不合格（K > 1/2000），建议重测\n")
+        else:
+            f.write("✅ 精度评定：完美闭合\n")
+        
+        f.write("=" * 60 + "\n")
+        f.write(f"报告保存路径: {filepath}\n")
+    
+    return filepath

@@ -25,7 +25,8 @@ from traverse import (
     traverse_calculation,
     format_traverse_report,
     adjust_traverse,
-    format_adjusted_report
+    format_adjusted_report,
+    save_traverse_report
 )
 
 import os
@@ -301,6 +302,26 @@ def main():
                     format_adjusted_report(adjusted_results, closure)
                 else:
                     print("已跳过平差")
+
+                # 询问是否导出报告
+                print("\n是否导出计算报告？")
+                print("1. 是（保存到 output/ 目录）")
+                print("2. 否")
+                save_choice = input("请选择：")
+                
+                if save_choice == "1":
+                    adjusted_for_report = adjusted_results if adjust_choice == "1" else None
+                    report_path = save_traverse_report(
+                        results, 
+                        closure, 
+                        adjusted_for_report,
+                        start_x, 
+                        start_y, 
+                        start_azimuth
+                    )
+                    print(f"✅ 报告已保存：{report_path}")
+                else:
+                    print("已跳过报告导出")
 
             # ==============================
             # 无效输入
