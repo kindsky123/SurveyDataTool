@@ -21,9 +21,11 @@ from error_handler import (
 )
 
 from traverse import (
-    read_traverse_data, 
-    traverse_calculation, 
-    format_traverse_report
+    read_traverse_data,
+    traverse_calculation,
+    format_traverse_report,
+    adjust_traverse,
+    format_adjusted_report
 )
 
 import os
@@ -282,11 +284,23 @@ def main():
                 start_y = input_float("起点Y坐标：")
                 start_azimuth = input_float("起始方位角（度）：")
                 
-                # 执行导线计算
+                    # 执行导线计算
                 results, closure = traverse_calculation(start_x, start_y, start_azimuth, observed_data)
                 
-                # 输出结果
+                # 输出原始结果
                 format_traverse_report(results, closure)
+                
+                # 执行平差（分配闭合差）
+                print("\n是否进行平差计算？")
+                print("1. 是（按边长分配闭合差）")
+                print("2. 否（仅查看原始结果）")
+                adjust_choice = input("请选择：")
+                
+                if adjust_choice == "1":
+                    adjusted_results = adjust_traverse(results, closure)
+                    format_adjusted_report(adjusted_results, closure)
+                else:
+                    print("已跳过平差")
 
             # ==============================
             # 无效输入
