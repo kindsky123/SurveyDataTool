@@ -184,31 +184,47 @@ def main():
             # ==============================
             # 7. 批量计算测量点数据
             # ==============================
-
             elif choice == "7":
                 print("你选择了：批量计算测量点数据")
                 points = load_points_from_file()
                 if points is None:
                     continue
 
+                total_pairs = len(points) - 1
+                if total_pairs <= 0:
+                    print("错误：至少需要 2 个点才能进行批量计算！")
+                    continue
+                
+                print(f"\n共有 {total_pairs} 对相邻点需要计算\n")
+                
                 results = []
-                for i in range(len(points) - 1):
+                cumulative_dist = 0
+                
+                for i in range(total_pairs):
                     p1 = points[i]
                     p2 = points[i + 1]
+                    
+                    # 显示进度
+                    print(f"正在计算：第 {i+1}/{total_pairs} 对点 ({p1['id']} → {p2['id']})")
+                    
                     dis = distance(p1["x"], p1["y"], p2["x"], p2["y"])
                     angle = azimuth(p1["x"], p1["y"], p2["x"], p2["y"])
+                    
+                    cumulative_dist += dis
+                    
                     results.append({
                         "起点": p1["id"],
                         "终点": p2["id"],
                         "距离": round(dis, 3),
                         "方位角": round(angle, 3)
                     })
-
+                
+                print("\n✅ 计算完成！")
+                print(f"共计算 {len(results)} 对点，累计边长 {cumulative_dist:.3f} m")
+                
                 output_file = os.path.join(OUTPUT_DIR, "result.csv")
-                save_results(output_file, results)
-                print(f"计算完成，结果已保存：{output_file}")
-
-
+                save_results(output_file, results, include_cumulative=True)
+                print(f"结果已保存：{output_file}")
 
             # ==============================
             # 8. 测量点可视化

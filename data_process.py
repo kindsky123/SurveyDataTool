@@ -97,31 +97,30 @@ def validate_points(points):
 # 保存计算结果
 # ===============================
 
-def save_results(filename, results):
-    # 把Python里面的数据写入CSV
-
-    with open(
-        filename,
-        "w",
-        encoding="utf-8",
-        newline=""
-    ) as file:
-
-        writer = csv.DictWriter(
-            file,
-            fieldnames=[
-                "起点",
-                "终点",
-                "距离",
-                "方位角"
-            ]
-        )
-
+def save_results(filename, results, include_cumulative=False):
+    """
+    把Python里面的数据写入CSV
+    
+    参数：
+        filename: 保存的文件名
+        results: 结果列表，每个元素包含"起点""终点""距离""方位角"
+        include_cumulative: 是否包含累计边长列
+    """
+    # 定义字段名
+    fieldnames = ["起点", "终点", "距离", "方位角"]
+    if include_cumulative:
+        fieldnames.append("累计边长")
+    
+    with open(filename, "w", encoding="utf-8", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
-
+        
+        cumulative = 0
         for result in results:
+            if include_cumulative:
+                cumulative += result["距离"]
+                result["累计边长"] = round(cumulative, 3)
             writer.writerow(result)
-
 
 def get_points_stats(points):
     """
