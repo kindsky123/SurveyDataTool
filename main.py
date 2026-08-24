@@ -14,12 +14,7 @@ from data_process import (
 )
 
 from visualization import plot_points
-
-from error_handler import (
-    input_float,
-    load_points_from_file
-)
-
+from error_handler import input_float
 from traverse import (
     read_traverse_data,
     traverse_calculation,
@@ -40,7 +35,31 @@ DATA_DIR = "data"
 OUTPUT_DIR = "output"
 
 
+# ==============================
+# 公共函数：读取并校验 CSV 文件
+# ==============================
 
+def load_points_from_file():
+    """让用户输入CSV文件名，读取并校验测量点数据"""
+    filename = input("请输入CSV文件名：")
+    filepath = os.path.join(DATA_DIR, filename)
+
+    try:
+        points = read_points(filepath)
+    except FileNotFoundError:
+        print("文件不存在！请检查文件名。")
+        return None
+    except ValueError as error:
+        print(f"数据格式错误：{error}")
+        return None
+
+    valid, message = validate_points(points)
+    if not valid:
+        print(f"数据检查失败：{message}")
+        return None
+
+    print(f"已读取 {len(points)} 个有效测量点")
+    return points
 
 
 # ==============================
@@ -63,7 +82,7 @@ def main():
             print("6. 测量点距离及方位角")
             print("7. 批量计算测量点数据")
             print("8. 测量点可视化")
-            print("9. 测量点统计") 
+            print("9. 测量点统计")
             print("10. 导线计算")
             print("0. 退出")
 
@@ -72,17 +91,13 @@ def main():
             # ==============================
             # 0. 退出
             # ==============================
-
             if choice == "0":
                 print("程序结束")
                 break
 
-
-
             # ==============================
             # 1. 两点距离
             # ==============================
-
             elif choice == "1":
                 print("你选择了：两点距离")
                 x1 = input_float("请输入A点X坐标：")
@@ -92,12 +107,9 @@ def main():
                 result = distance(x1, y1, x2, y2)
                 print(f"A-B距离：{result:.3f} m")
 
-
-
             # ==============================
             # 2. 方位角
             # ==============================
-
             elif choice == "2":
                 print("你选择了：方位角")
                 x1 = input_float("请输入A点X坐标：")
@@ -107,12 +119,9 @@ def main():
                 angle = azimuth(x1, y1, x2, y2)
                 print(f"A-B方位角：{angle:.3f}°")
 
-
-
             # ==============================
             # 3. 坐标正算
             # ==============================
-
             elif choice == "3":
                 print("你选择了：坐标正算")
                 x = input_float("请输入起点X坐标：")
@@ -123,12 +132,9 @@ def main():
                 print(f"终点X坐标：{x_end:.3f}")
                 print(f"终点Y坐标：{y_end:.3f}")
 
-
-
             # ==============================
             # 4. 坐标反算
             # ==============================
-
             elif choice == "4":
                 print("你选择了：坐标反算")
                 x1 = input_float("请输入A点X坐标：")
@@ -139,12 +145,9 @@ def main():
                 print(f"A-B距离：{dis:.3f} m")
                 print(f"A-B方位角：{angle:.3f}°")
 
-
-
             # ==============================
             # 5. 读取测量点数据
             # ==============================
-
             elif choice == "5":
                 print("你选择了：读取测量点数据")
                 points = load_points_from_file()
@@ -154,12 +157,9 @@ def main():
                 for point in points:
                     print(f"{point['id']}: X={point['x']:.3f}, Y={point['y']:.3f}")
 
-
-
             # ==============================
             # 6. 测量点距离及方位角
             # ==============================
-
             elif choice == "6":
                 print("你选择了：测量点距离与方位角")
                 points = load_points_from_file()
@@ -179,12 +179,9 @@ def main():
                     print(f"{point1_id}-{point2_id}距离：{dis:.3f} m")
                     print(f"{point1_id}-{point2_id}方位角：{angle:.3f}°")
 
-
-
             # ==============================
             # 7. 批量计算测量点数据
             # ==============================
-
             elif choice == "7":
                 print("你选择了：批量计算测量点数据")
                 points = load_points_from_file()
@@ -195,44 +192,40 @@ def main():
                 if total_pairs <= 0:
                     print("错误：至少需要 2 个点才能进行批量计算！")
                     continue
-                
+
                 print(f"\n共有 {total_pairs} 对相邻点需要计算\n")
-                
+
                 results = []
                 cumulative_dist = 0
-                
+
                 for i in range(total_pairs):
                     p1 = points[i]
                     p2 = points[i + 1]
-                    
-                    # 显示进度
+
                     print(f"正在计算：第 {i+1}/{total_pairs} 对点 ({p1['id']} → {p2['id']})")
-                    
+
                     dis = distance(p1["x"], p1["y"], p2["x"], p2["y"])
                     angle = azimuth(p1["x"], p1["y"], p2["x"], p2["y"])
-                    
+
                     cumulative_dist += dis
-                    
+
                     results.append({
                         "起点": p1["id"],
                         "终点": p2["id"],
                         "距离": round(dis, 3),
                         "方位角": round(angle, 3)
                     })
-                
-                print("\n✅ 计算完成！")
+
+                print(f"\n✅ 计算完成！")
                 print(f"共计算 {len(results)} 对点，累计边长 {cumulative_dist:.3f} m")
-                
+
                 output_file = os.path.join(OUTPUT_DIR, "result.csv")
                 save_results(output_file, results, include_cumulative=True)
                 print(f"结果已保存：{output_file}")
 
-
-
             # ==============================
             # 8. 测量点可视化
             # ==============================
-
             elif choice == "8":
                 print("你选择了：测量点可视化")
                 points = load_points_from_file()
@@ -242,12 +235,9 @@ def main():
                 plot_points(points)
                 print("测量点图已保存：survey_points.png")
 
-
-
             # ==============================
             # 9. 测量点统计
             # ==============================
-            
             elif choice == "9":
                 print("你选择了：测量点统计")
                 points = load_points_from_file()
@@ -265,8 +255,6 @@ def main():
                 print(f"Y坐标平均值：{stats['y_avg']:.3f}")
                 print("=" * 40)
 
-
-
             # ==============================
             # 10. 导线计算
             # ==============================
@@ -276,10 +264,10 @@ def main():
                 print("文件格式：点号, 角(度), 边长(米), 备注")
                 print("备注列填写'已知'表示该点为已知点（不参与计算）")
                 print()
-                
+
                 filename = input("请输入CSV文件名：")
                 filepath = os.path.join(DATA_DIR, filename)
-                
+
                 try:
                     observed_data = read_traverse_data(filepath)
                 except FileNotFoundError:
@@ -291,31 +279,32 @@ def main():
                 except KeyError as error:
                     print(f"CSV缺少必需列：{error}")
                     continue
-                
+
                 if not observed_data:
                     print("文件中没有数据！")
                     continue
-                
+
                 print(f"已读取 {len(observed_data)} 条观测数据")
-                
+
                 # 输入起点坐标和起始方位角
                 print("\n请输入导线起点信息：")
                 start_x = input_float("起点X坐标：")
                 start_y = input_float("起点Y坐标：")
                 start_azimuth = input_float("起始方位角（度）：")
-                
-                    # 执行导线计算
+
+                # 执行导线计算
                 results, closure = traverse_calculation(start_x, start_y, start_azimuth, observed_data)
-                
+
                 # 输出原始结果
                 format_traverse_report(results, closure)
-                
+
                 # 执行平差（分配闭合差）
                 print("\n是否进行平差计算？")
                 print("1. 是（按边长分配闭合差）")
                 print("2. 否（仅查看原始结果）")
                 adjust_choice = input("请选择：")
-                
+
+                adjusted_results = None
                 if adjust_choice == "1":
                     adjusted_results = adjust_traverse(results, closure)
                     format_adjusted_report(adjusted_results, closure)
@@ -327,15 +316,14 @@ def main():
                 print("1. 是（保存到 output/ 目录）")
                 print("2. 否")
                 save_choice = input("请选择：")
-                
+
                 if save_choice == "1":
-                    adjusted_for_report = adjusted_results if adjust_choice == "1" else None
                     report_path = save_traverse_report(
-                        results, 
-                        closure, 
-                        adjusted_for_report,
-                        start_x, 
-                        start_y, 
+                        results,
+                        closure,
+                        adjusted_results,
+                        start_x,
+                        start_y,
                         start_azimuth
                     )
                     print(f"✅ 报告已保存：{report_path}")
@@ -345,7 +333,6 @@ def main():
             # ==============================
             # 无效输入
             # ==============================
-
             else:
                 print("请输入正确的功能编号！")
 
