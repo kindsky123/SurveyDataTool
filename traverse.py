@@ -320,3 +320,152 @@ def save_traverse_report(results, closure, adjusted_results, start_x, start_y, s
         f.write(f"报告保存路径: {filepath}\n")
     
     return filepath
+
+def traverse_adjust(start_x, start_y, end_x, end_y, start_azimuth, end_azimuth, observed_data):
+    """
+    附和导线计算（含平差）
+    
+    参数：
+        start_x, start_y: 起点已知坐标
+        end_x, end_y: 终点已知坐标
+        start_azimuth: 起始方位角（度）
+        end_azimuth: 终边方位角（度）
+        observed_data: 观测数据列表
+    
+    返回：
+        results: 各点坐标
+        closure: 角度闭合差、坐标闭合差
+        adjusted_results: 平差后结果
+    """
+    import math
+    
+    # 第一步：角度平差
+    # 计算理论终边方位角
+    # 理论上：α_终 = α_起 + n*180° - Σβ (左角)
+    n = len(observed_data)
+    sum_angle = sum([p["angle"] for p in observed_data])
+    theory_end_azimuth = (start_azimuth + n * 180 - sum_angle) % 360
+    
+    # 角度闭合差
+    angle_error = theory_end_azimuth - end_azimuth
+    # 角度改正数（反号平均分配）
+    angle_correction = -angle_error / n
+    
+    # 应用角度改正数到每个观测角
+    corrected_data = []
+    for p in observed_data:
+        new_p = p.copy()
+        new_p["angle"] = p["angle"] + angle_correction
+        corrected_data.append(new_p)
+    
+    # 第二步：用改正后的角度推算坐标
+    results = []
+    cur_x, cur_y = start_x, start_y
+    cur_azimuth = start_azimuth
+    total_distance = 0
+    sum_dx, sum_dy = 0, 0
+    
+    for p in corrected_data:
+        # 计算新方位角
+        new_azimuth = (cur_azimuth + 180 - p["angle"]) % 360
+        angle_rad = math.radians(new_azimuth)
+        dx = p["distance"] * math.cos(angle_rad)
+        dy = p["distance"] * math.sin(angle_rad)
+        
+        cur_x += dx
+        cur_y += dy
+        total_distance += p["distance"]
+        sum_dx += dx
+        sum_dy += dy
+        
+        results.append({
+            "name": p["name"],
+            "x": cur_x,
+            "y": cur_y,
+            "dx": dx,
+            "dy": dy,
+            "distance": p["distance"],
+            "azimuth": new_azimuth
+        })
+    
+    # 第三步：坐标闭合差
+    fx = end_x - cur_x
+    fy = end_y - cur_y
+    f = math.sqrt(fx**2 + fy**2)
+    k = f / total_distance if total_distance > 0 else 0
+    
+    closure = {
+        "angle_error": angle_error,
+        "angle_correction": angle_correction,
+        "fx": fx,
+        "fy": fy,
+        "f": f,
+        "k": k,
+        "total_distance": total_distance
+    }
+    
+    # 第四步：平差（按边长分配坐标闭合差）
+    adjusted_results = []
+    cum_dx_adj = 0
+    cum_dy_adj = 0
+    
+    for i, r in enumerate(results):
+        new_r = r.copy()
+        vx = -fx * (r["distance"] / total_distance) if total_distance > 0 else 0
+        vy = -fy * (r["distance"] / total_distance) if total_distance > 0 else 0
+        cum_dx_adj += vx
+        cum_dy_adj += vy
+        new_r["adj_x"] = r["x"] + cum_dx_adj
+        new_r["adj_y"] = r["y"] + cum_dy_adj
+        new_r["vx"] = vx
+        new_r["vy"] = vy
+        adjusted_results.append(new_r)
+    
+    return results, closure, adjusted_results
+
+
+def format_traverse_adjust_report(results, closure, adjusted_results, start_x, start_y, end_x, end_y):
+    """格式化输出附和导线计算结果"""
+    print("=" * 70)
+    print("              附和导线计算结果")
+    print("=" * 70)
+    
+    print(f"\n已知起点: ({start_x:.3f}, {start_y:.3f})")
+    print(f"已知终点: ({end_x:.3f}, {end_y:.3f})")
+    print(f"导线总长: {closure['total_distance']:.3f} m")
+    
+    print("\n【角度平差】")
+    print(f"角度闭合差: {closure['angle_error']:.6f}°")
+    print(f"角度改正数: {closure['angle_correction']:.6f}° (每个转角)")
+    
+    print("\n【推算坐标】")
+    print("-" * 70)
+    print(f"{'点号':<8} {'X':<12} {'Y':<12} {'ΔX':<12} {'ΔY':<12} {'边长':<10}")
+    print("-" * 70)
+    for r in results:
+        print(f"{r['name']:<8} {r['x']:<12.3f} {r['y']:<12.3f} {r['dx']:<12.3f} {r['dy']:<12.3f} {r['distance']:<10.3f}")
+    
+    print("\n【坐标闭合差】")
+    print(f"fx = {closure['fx']:.6f} m")
+    print(f"fy = {closure['fy']:.6f} m")
+    print(f"全长闭合差 f = {closure['f']:.6f} m")
+    k_str = f"1/{int(1/closure['k'])}" if closure['k'] > 0 else "∞"
+    print(f"相对闭合差 K = {k_str}")
+    
+    # 精度评定
+    print("\n【精度评定】")
+    if closure['k'] > 0:
+        if closure['k'] <= 1/2000:
+            print("✅ 精度评定：合格（K ≤ 1/2000）")
+        else:
+            print("❌ 精度评定：不合格（K > 1/2000），建议重测")
+    else:
+        print("✅ 精度评定：完美附和")
+    
+    print("\n【平差后坐标】")
+    print("-" * 70)
+    print(f"{'点号':<8} {'平差后X':<12} {'平差后Y':<12} {'Vx':<12} {'Vy':<12}")
+    print("-" * 70)
+    for r in adjusted_results:
+        print(f"{r['name']:<8} {r['adj_x']:<12.3f} {r['adj_y']:<12.3f} {r['vx']:<12.6f} {r['vy']:<12.6f}")
+    print("=" * 70)

@@ -15,13 +15,16 @@ from data_process import (
 
 from visualization import plot_points
 from error_handler import input_float
+
 from traverse import (
     read_traverse_data,
     traverse_calculation,
     format_traverse_report,
     adjust_traverse,
     format_adjusted_report,
-    save_traverse_report
+    save_traverse_report,
+    traverse_adjust,
+    format_traverse_adjust_report
 )
 
 import os
@@ -84,6 +87,7 @@ def main():
             print("8. 测量点可视化")
             print("9. 测量点统计")
             print("10. 导线计算")
+            print("11. 附和导线计算")
             print("0. 退出")
 
             choice = input("请选择功能：")
@@ -329,6 +333,56 @@ def main():
                     print(f"✅ 报告已保存：{report_path}")
                 else:
                     print("已跳过报告导出")
+
+
+            # ==============================
+            # 11. 附和导线计算
+            # ==============================
+            elif choice == "11":
+                print("你选择了：附和导线计算")
+                print("\n请输入导线观测数据文件（CSV格式）")
+                print("文件格式：点号, 角(度), 边长(米)")
+                print()
+                
+                filename = input("请输入CSV文件名：")
+                filepath = os.path.join(DATA_DIR, filename)
+                
+                try:
+                    observed_data = read_traverse_data(filepath)
+                except FileNotFoundError:
+                    print("文件不存在！请检查文件名。")
+                    continue
+                except ValueError as error:
+                    print(f"数据格式错误：{error}")
+                    continue
+                except KeyError as error:
+                    print(f"CSV缺少必需列：{error}")
+                    continue
+                
+                if not observed_data:
+                    print("文件中没有数据！")
+                    continue
+                
+                print(f"已读取 {len(observed_data)} 条观测数据")
+                
+                # 输入起点和终点已知坐标
+                print("\n请输入已知点信息：")
+                start_x = input_float("起点X坐标：")
+                start_y = input_float("起点Y坐标：")
+                start_azimuth = input_float("起始方位角（度）：")
+                
+                end_x = input_float("终点X坐标：")
+                end_y = input_float("终点Y坐标：")
+                end_azimuth = input_float("终边方位角（度）：")
+                
+                # 执行附和导线计算
+                results, closure, adjusted_results = traverse_adjust(
+                    start_x, start_y, end_x, end_y,
+                    start_azimuth, end_azimuth,
+                    observed_data
+                )
+                
+                format_traverse_adjust_report(results, closure, adjusted_results, start_x, start_y, end_x, end_y)
 
             # ==============================
             # 无效输入
